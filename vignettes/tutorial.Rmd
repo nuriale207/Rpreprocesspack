@@ -1,0 +1,109 @@
+---
+title: "Preprocesspack "
+author: "Nuria Lebeña"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{"Tutorial for using the Preprocesspack package"}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+This tutorial provides simple examples to learn how to use the functions provided by Preprocesspack package.
+
+First we are going to create an Attribute object. There are several ways of creating an object. In this example we have created three Attributes. In the last one, a discretization function has been applied.
+
+```{r}
+attribute(c(0.3,0.23,0.4,0.74))
+
+age<-attribute(c(13,26,84,55,30),name="age")
+age
+
+age_category<-attribute(c(12,60,65,14,40),name="age category",discretize = TRUE,discretizationType = "EW",num.bins = 2)
+age_category
+```
+
+To create a DataSet we can add a previously defined attribute or pass a vector. The name of each column will be the attribute name.
+```{r}
+ds<-dataset(name="My data set")
+
+ds<-addAttribute(ds,age)
+ds<-addAttribute(ds,age_category)
+ds<-addAttribute(ds,c(2,3,4,5))
+
+
+ds
+```
+The DataSet object can also be loaded from a csv file. The function loadDataSet loads the csv file content into a DataSet. In this example the loaded file is separated by , and the first row works as the column name for the file.
+
+```{r,eval=FALSE}
+csvData<-loadDataSet("path/to/file.csv",header=TRUE,sep=",")
+
+```
+The function normalize is used to normalize the data or an attribute. It returns the original attribute when applied to a factor type attribute.
+
+
+```{r, fig.width=10, fig.height=6, out.width="100%"}
+normalize(age)
+
+normalize(age_category)
+
+normalize(ds)
+```
+
+To standardize the data or an attribute the function standardize can be used. It returns the original attribute when applied to a factor type attribute.
+
+```{r, fig.width=10, fig.height=6, out.width="100%"}
+standardize(age)
+standardize(age_category)
+
+standardize(ds)
+```
+Entropy function computes the entropy of an Attribute or a complete DataSet. In the case of continuous variables it returns NA. The entropy of a given DataSet can be plotted using the entropyPlot function
+
+```{r}
+  entropy(age)
+  entropy(normalize(age))
+  
+  entropyPlot(ds)
+```
+
+DataSet and Attribute objects can be discretized using the function discretize. This function computes two types of discretization: on the one hand, by assigning the "EW" value to the type parameter equal width discretization is computed. On the other hand, assigning "EF" value to the parameter computes equal width discretization. Num.bins parameter indicates how many ¿¿¿¿¿ are going to be made. In the following example a complete DataSet and an Attribute are categorized.
+
+```{r}
+ds<- dataset(name="discretizado")
+ds<-addAttribute(ds,c(1.3,4.5,6.7,8.9))
+ds<-addAttribute(ds,c(3.4,2.9,2.1,1.9))
+
+attr<-attribute(c(2.5,6.8,9.2,1.8))
+ds<-addAttribute(ds,attribute = attr)
+ds
+discretize(ds,type="EW",num.bins = 3)
+discretize(attr,type="EF",num.bins = 3)
+```
+
+The package also includes a function to compute the variance of a DataDet or Attribute and a function to plot the correlation between the variables of a dataset. The variance function returns a vector with the variance of each column of the DataSet or a value in the case of the Attribute. The correlation is shown in a heatmap where darker blue cells indicate a higher correlation between variables.
+
+```{r}
+attr
+ds
+variance(ds)
+variance(attr)
+
+correlationPlot(ds)
+
+```
+Using the RocAuc function the area behind the ROC curve can be calculated. The RocAuc function takes as parameters: a DataSet, a variable and a class index and returns the area behind the ROC curve. In order to visualize the curve, the function RocPlot plots the Roc curve of the given variable index. In the example the Iris dataset is loaded and the roc
+
+```{r}
+ds<-addAttribute(ds,c(1,0,0,1))
+ds
+rocAuc(ds,2,4)
+rocPlot(ds,2,4)
+```

@@ -1,0 +1,21 @@
+exportPattern("^[[:alpha:]]+")
+exportClasses(Attribute,DataSet)
+exportMethods(discretize,
+              getName,
+              getVector,
+              addAttribute,
+              entropy,
+              normalize,
+              standardize,
+              variance,
+              getNames,
+              asMatrix,
+              show,
+              getName,
+              rocAuc)
+export(writeFile,
+       loadDataSet,
+       dataset,
+       attribute,
+       discretize,
+       writeDataSet)
