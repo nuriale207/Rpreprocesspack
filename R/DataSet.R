@@ -106,7 +106,7 @@ setMethod(f="standardize",
 #' Function to compute the variance of a given DataSet
 #'
 #' @description This function computes the variance of a given DataSet
-#' @param data an Attribute class vector
+#' @param x a DataSet Object
 #' @return A vector containing the variance of each column data
 #'
 
@@ -222,6 +222,83 @@ setMethod(f="show",
             }
           })
 
+#' Function to compute the correlation matrix between the Attribute pairs of the dataset
+#'
+#' @description This function returns the correlation matrix between the Attribute pairs of the DataSet
+#' @param data DataSet class vector
+#' @return A matrix containing the correlation between attribute pairs.
+#'
+setGeneric(name="correlation", def=function(x) standardGeneric("correlation"))
+setMethod(f="correlation",
+          signature = "DataSet",
+          definition = function(x){
+              correlation=matrix(rep(0,length(x@data)**2),ncol = length(x@data))
+              for(i in seq(1,length(x@data))){
+                  v1<-x@data[[i]]
+
+                  for(j in seq(i,length(x@data))){
+                    v2<-x@data[[j]]
+                    valor<-computeCorrelation(getVector(v1),getVector(v2))
+                    correlation[i,j]<-valor
+                    correlation[j,i]<-valor
+                  }
+              }
+
+              return(correlation)
+
+          })
+
+#' Function to filter the dataset attribute
+#'
+#' @description This function returns the filtered DataSet without the unnecessary attributes
+#' @param x DataSet class vector
+#' @param FUN function by which filter the data, it has to return a value per attribute. FUN=correlation by default
+#' @param threshold numeric value that indicates the limit from which to remove the attribute
+#' @param inverse If TRUE the attribute has to be below the threshold to remove ir.By default FALSE
+#' @return A DataSet without the filtered attributes
+#'
+setGeneric(name="filter",def=function(x,FUN,threshold,inverse) standardGeneric("filter"))
+setMethod(f="filter",
+          signature="DataSet",
+          definition=function(x,FUN,threshold,inverse){
+            if(missing(inverse)){
+              inverse=FALSE
+            }
+              if(missing(FUN)){
+                cor<-correlation(x)
+                elimino<-c()
+                for(i in seq(1,length(x@data))){
+                  for(j in seq(i,length(x@data))){
+                    if(i!=j && cor[i,j]>=threshold && inverse==FALSE){
+                       elimino<-c(elimino,i)
+                    }
+                    else if(i!=j && cor[i,j]<threshold && inverse==TRUE){
+                       elimino<-c(elimino,i)
+                    }
+                  }
+                }
+                print(elimino)
+                data<-x@data[-elimino]
+              }
+              else{
+                result<-sapply(x@data,FUN=FUN)
+                if(inverse==TRUE){
+                  filter<- result<threshold
+                }
+                else{
+                  filter<- result>threshold
+                }
+                data<-x@data[filter]
+
+              }
+
+
+             return(dataset(data,x@name))
+
+
+          })
+
+
 #' Function to compute the AUC-ROC of the DataSet
 #'
 #' @description This function computes the Area Under the Curve ROC of the DataSet
@@ -240,25 +317,28 @@ setMethod(f="rocAuc",
             attr<-dat@data[[vIndex]]
             nValues<-length(attr@vector)
             class<-dat@data[[classIndex]]
-            TPR<-c()
-            FPR<-c()
-            for(i in 1:nValues){
-              predicciones<- rep(TRUE,nValues)
-              predicciones<-attr@vector>=attr@vector[i]
-              TP<-sum(class@vector&predicciones==TRUE)
-              TN<-sum(!(class@vector|predicciones))
-              FN<-sum((class@vector==1)&(predicciones==0))
-              FP<-sum((class@vector==0)&(predicciones==1))
-              TPR<-c(TPR,TP/(TP+FN))
-              FPR<-c(FPR,FP/(FP+TN))
+            if(class(attr)!="factor"){
+              TPR<-c()
+              FPR<-c()
+              for(i in 1:nValues){
+                predicciones<- rep(TRUE,nValues)
+                predicciones<-attr@vector>=attr@vector[i]
+                TP<-sum(class@vector&predicciones==TRUE)
+                TN<-sum(!(class@vector|predicciones))
+                FN<-sum((class@vector==1)&(predicciones==0))
+                FP<-sum((class@vector==0)&(predicciones==1))
+                TPR<-c(TPR,TP/(TP+FN))
+                FPR<-c(FPR,FP/(FP+TN))
 
+              }
+              TPR[is.na(TPR)] <- 0
+              FPR[is.na(FPR)] <- 0
+              dFPR <- c(diff(FPR), 0)
+              dTPR <- c(diff(TPR), 0)
+              AUC<-sum(TPR * dFPR) + sum(dTPR * dFPR)/2
+              return(AUC)
             }
-            TPR[is.na(TPR)] <- 0
-            FPR[is.na(FPR)] <- 0
-            dFPR <- c(diff(FPR), 0)
-            dTPR <- c(diff(TPR), 0)
-            AUC<-sum(TPR * dFPR) + sum(dTPR * dFPR)/2
-            return(AUC)
+
                      })
 
 

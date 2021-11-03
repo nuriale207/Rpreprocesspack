@@ -25,8 +25,10 @@ attribute(c(0.3,0.23,0.4,0.74))
 age<-attribute(c(13,26,84,55,30),name="age")
 age
 
-age_category<-attribute(c(12,60,65,14,40),name="age category",discretize = TRUE,discretizationType = "EW",num.bins = 2)
+age_category<-attribute(c(12,60,65,14,40),name="age category")
+age_category<-discretize(age_category,type = "EW",num.bins = 2)
 age_category
+                         
 ```
 
 To create a DataSet we can add a previously defined attribute or pass a vector. The name of each column will be the attribute name.
@@ -106,4 +108,18 @@ ds<-addAttribute(ds,c(1,0,0,1))
 ds
 rocAuc(ds,2,4)
 rocPlot(ds,2,4)
+
+correlationDs<-correlation(ds)
+correlationDs
+dsFilt<-filter(ds,threshold = 0,inverse=FALSE)
+dsFilt
+
+correlationDs>0.6
+variance(ds)
+ds@data
+var<-sapply(ds@data,FUN=variance)
+menores<- var<0.7
+menores
+ds@data[menores]
+
 ```

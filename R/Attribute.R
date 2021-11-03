@@ -189,7 +189,12 @@ setGeneric(name="variance",def=function(x) standardGeneric("variance"))
 setMethod(f="variance",
           signature = "Attribute",
           definition = function(x){
-            return(var(x@vector))
+            if(class(x)!="factor"){
+              return(var(x@vector))
+            }
+            else{
+              return(NA)
+            }
           })
 
 
@@ -243,3 +248,13 @@ setMethod(f="show",
             }
           })
 
+# attr<-attribute(c(2.3,4.5,7.8,9.5))
+# attr<-discretize(attr,3,"EW")
+# class(attr@vector)
+# attr@vector
+#
+# attr2<-attribute(c(3.4,8.5,7.3,3.5))
+# attr2<-discretize(attr2,3,"EW")
+# class(attr2@vector)
+# attr2@vector
+# cor(attr,attr2)

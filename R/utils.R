@@ -137,6 +137,31 @@ computEntropy <- function(x,normalize){
   return(entropia)
 }
 
+
+#' Function to compute the correlation between two vectors
+#'
+#' @description This function computes the correlation between two vectors
+#' @param x a vector
+#' @param y a vector
+#' @param discretizationType
+#' @param num.bins
+#' @return A real number
+#'
+computeCorrelation<-function(x,y){
+  if(class(x)!="factor" && class(y)=="factor"){
+    x<-discretizeEW(y,length(y)/3)
+  }
+  if(class(y)!="factor" && class(x)=="factor"){
+    y<-discretizeEW(x,length(x)/3)
+  }
+  if(class(y)=="factor" && class(x)=="factor"){
+    return(multinformation(x,y)[0])
+  }
+  else{
+    return(cor(x,y))
+  }
+}
+
 #' Function to save a log text into a file
 #'
 #' @description This function saves the given text with the date in a file in the given path
