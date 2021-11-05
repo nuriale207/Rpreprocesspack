@@ -4,6 +4,8 @@
 #' @param x a vector composed by real numbers
 #' @param cut.points a list with the points at which the vector has to be cut
 #' @return A factor with the discretization
+#' @example
+#' discretizePoints(c(2,3,4,5,7),c(4,8))
 #'
 discretizePoints <- function(x,cut.points) {
   vCat<- c(1:length(x))
@@ -25,6 +27,8 @@ discretizePoints <- function(x,cut.points) {
 #' @param x a vector composed by real numbers
 #' @param num.bins number of intervals
 #' @return A factor with the equal width discretization
+#' @example
+#' discretizeEW(c(3.5,6.7,2.4,7.8,1.2),3)
 #'
 discretizeEW<- function (x, num.bins) {
   width <- (max(x)-min(x))/num.bins
@@ -54,7 +58,9 @@ discretizeEW<- function (x, num.bins) {
 #' @param x a vector composed by real numbers
 #' @param num.bins number of intervals
 #' @return A factor with the equal frequency discretization
-#'
+#' @example
+#' discretizeEF(c(3.5,6.7,2.4,7.8,1.2),6)
+
 discretizeEF <- function(x,num.bins) {
   n<-length(x)
   numXIntervalo <- floor(n/num.bins)
@@ -114,6 +120,9 @@ discretizeEF <- function(x,num.bins) {
 #' @description This function computes the entropy of a given vector
 #' @param x a vector composed by discrete variables
 #' @return A real number
+#' @example
+#' computEntropy(c(2,3,4,5,6,7,7),FALSE)
+#' computEntropy(c(2,3,4,5,6,7,7),TRUE)
 #'
 computEntropy <- function(x,normalize){
   if(missing(normalize)){
@@ -141,24 +150,52 @@ computEntropy <- function(x,normalize){
 #' Function to compute the correlation between two vectors
 #'
 #' @description This function computes the correlation between two vectors
-#' @param x a vector
-#' @param y a vector
-#' @param discretizationType
-#' @param num.bins
-#' @return A real number
+#' @param x an attribute
+#' @param y an attribute
+#' @param discretizationType if x and y are a mix of continuous and discrete variables a discretization is computed
+#' in the continuous one. This parameter indicates the discretization type to compute: equal width "EW"
+#' (default) or equal frequency "EF"
+#' @param num.bins if x and y are a mix of continuous and discrete variables a discretization is computed
+#' in the continuous one. This parameter indicates the number of intervals to use in the discretization.
+#' It's 3 by default
+#' @return A real number with the correlation between both vectors
+#' @example
+#' computeCorrelation(c(2.3,4.5,6.7,8.9),c(2,2,1,3))
+#' computeCorrelation(c(2.3,4.5,6.7,8.9),c(2,2,1,3),"EF")
+#' computeCorrelation(c(2.3,4.5,6.7,8.9),c(2,2,1,3),"EF",4)
 #'
-computeCorrelation<-function(x,y){
-  if(class(x)!="factor" && class(y)=="factor"){
-    x<-discretizeEW(y,length(y)/3)
+computeCorrelation<-function(x,y,discretizationType,num.bins){
+  library(infotheo)
+  if(missing(discretizationType)){
+    discretizationType="EW"
   }
-  if(class(y)!="factor" && class(x)=="factor"){
-    y<-discretizeEW(x,length(x)/3)
+  if(missing(num.bins)){
+    num.bins=3
   }
-  if(class(y)=="factor" && class(x)=="factor"){
-    return(multinformation(x,y)[0])
+
+  if(class(x@vector)!="factor" && class(y@vector)=="factor"){
+    if(discretizationType=="EF"){
+      x@vector<-discretizeEF(x@vector,num.bins)
+
+    }
+    else{
+      x@vector<-discretizeEW(x@vector,num.bins)
+    }
+  }
+  if(class(y@vector)!="factor" && class(x@vector)=="factor"){
+    if(discretizationType=="EF"){
+      y@vector<-discretizeEF(y@vector,num.bins)
+
+    }
+    else{
+      y@vector<-discretizeEW(y@vector,num.bins)
+    }
+  }
+  if(class(y@vector)=="factor" && class(x@vector)=="factor"){
+    return(mutinformation(x@vector,y@vector))
   }
   else{
-    return(cor(x,y))
+    return(cor(x@vector,y@vector))
   }
 }
 

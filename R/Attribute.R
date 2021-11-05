@@ -119,7 +119,7 @@ setGeneric(name="entropy", def=function(x) standardGeneric("entropy"))
 setMethod(f="entropy",
           signature="Attribute",
           definition=function (x) {
-            if(x@type!="factor" && x@type!="numeric" ){
+            if(x@type!="factor" && x@type!="integer" ){
               return(NA)
             }
             else{
@@ -136,7 +136,7 @@ setMethod(f="entropy",
 #' @param attribute an Attribute class vector
 #' @return A normalized attribute
 #'
-setGeneric(name="normalize",def=function(x) standardGeneric("normalize"))
+setGeneric(name="normalize",def=function(x,columns) standardGeneric("normalize"))
 
 setMethod(f="normalize",
           signature = "Attribute",
@@ -160,7 +160,7 @@ setMethod(f="normalize",
 #' @param attribute an Attribute class vector
 #' @return A standardized attribute
 #'
-setGeneric(name="standardize",def=function(x) standardGeneric("standardize"))
+setGeneric(name="standardize",def=function(x,columns) standardGeneric("standardize"))
 
 setMethod(f="standardize",
           signature = "Attribute",
@@ -189,7 +189,8 @@ setGeneric(name="variance",def=function(x) standardGeneric("variance"))
 setMethod(f="variance",
           signature = "Attribute",
           definition = function(x){
-            if(class(x)!="factor"){
+            if(class(x@vector)!="factor"){
+
               return(var(x@vector))
             }
             else{
@@ -238,15 +239,19 @@ setMethod(f="getVector",
 
 setMethod(f="show",
           signature = "Attribute",
-          definition = function(attr){
+          definition = function(object){
             cat("S4 object of class 'Attribute'\n")
-            cat(attr@name)
+
+            cat(object@name)
             cat('\n')
-            for(i in 1:attr@size){
-              cat(attr@vector[i])
+            for(i in 1:object@size){
+              cat(object@vector[i])
               cat('\n')
             }
           })
+
+
+
 
 # attr<-attribute(c(2.3,4.5,7.8,9.5))
 # attr<-discretize(attr,3,"EW")

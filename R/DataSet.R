@@ -80,9 +80,13 @@ setMethod(f="addAttribute",
 
 setMethod(f="normalize",
           signature = "DataSet",
-          definition = function(x){
-            normalized<-sapply(x@data,FUN=normalize)
-            return(dataset(normalized,x@name))
+          definition = function(x,columns){
+            if(missing(columns)){
+              columns<-seq(1:length(x@data))
+            }
+            normalized<-sapply(x@data[columns],FUN=normalize)
+            x@data[columns]<-normalized
+            return(x)
           })
 
 
@@ -96,9 +100,13 @@ setMethod(f="normalize",
 
 setMethod(f="standardize",
           signature = "DataSet",
-          definition = function(x){
-            standardized<-sapply(x@data,FUN=standardize)
-            return(dataset(standardized,x@name))
+          definition = function(x,columns){
+            if(missing(columns)){
+              columns<-seq(1:length(x@data))
+            }
+            standardized<-sapply(x@data[columns],FUN=standardize)
+            x@data[columns]<-standardized
+            return(x)
           })
 
 
@@ -201,21 +209,43 @@ setMethod(f="asMatrix",
 #'
 setMethod(f="show",
           signature = "DataSet",
-          definition = function(dat){
+          definition = function(object){
             cat("S4 object of class 'DataSet'\n")
-            cat(dat@name)
+            cat(object@name)
             cat('\n')
-            attr<-dat@data[[1]]
-            for(j in 1:dat@size){
-              attr<-dat@data[[j]]
-              cat(attr@name)
+            greater<-FALSE
+            attr<-object@data[[1]]
+            for(j in 1:object@size){
+              attr<-object@data[[j]]
+              name<-attr@name
+              # if(nchar(attr@name)>4){
+              #   greater<-TRUE
+              # }
+              if(nchar(attr@name)>8){
+                name<-strtrim(name, 8)
+              }
+              else{
+                cuantos<-8-nchar(attr@name)
+                name<-paste(name,paste(rep(" ",cuantos),collapse=""),sep="",collapse="")
+              }
+
+              cat(name)
               cat('\t')
+              # if(greater==TRUE){
+              #   cat('\t')
+              #   #cat('\t')
+              # }
+              # else{
+              #   cat('\t')
+              # }
+
             }
             cat("\n")
             for(i in 1:attr@size){
-              for(j in 1:dat@size){
-                attr<-dat@data[[j]]
+              for(j in 1:object@size){
+                attr<-object@data[[j]]
                 cat(attr@vector[i])
+                cat('\t')
                 cat('\t')
               }
               cat("\n")
@@ -228,17 +258,23 @@ setMethod(f="show",
 #' @param data DataSet class vector
 #' @return A matrix containing the correlation between attribute pairs.
 #'
-setGeneric(name="correlation", def=function(x) standardGeneric("correlation"))
+setGeneric(name="correlation", def=function(x,discretizationType,num.bins) standardGeneric("correlation"))
 setMethod(f="correlation",
           signature = "DataSet",
-          definition = function(x){
+          definition = function(x,discretizationType,num.bins){
+              if(missing(discretizationType)){
+                discretizationType="EW"
+              }
+              if(missing(num.bins)){
+                num.bins=3
+              }
               correlation=matrix(rep(0,length(x@data)**2),ncol = length(x@data))
               for(i in seq(1,length(x@data))){
                   v1<-x@data[[i]]
 
                   for(j in seq(i,length(x@data))){
                     v2<-x@data[[j]]
-                    valor<-computeCorrelation(getVector(v1),getVector(v2))
+                    valor<-computeCorrelation(v1,v2)
                     correlation[i,j]<-valor
                     correlation[j,i]<-valor
                   }
@@ -257,10 +293,10 @@ setMethod(f="correlation",
 #' @param inverse If TRUE the attribute has to be below the threshold to remove ir.By default FALSE
 #' @return A DataSet without the filtered attributes
 #'
-setGeneric(name="filter",def=function(x,FUN,threshold,inverse) standardGeneric("filter"))
+setGeneric(name="filter",def=function(x,threshold,FUN,inverse) standardGeneric("filter"))
 setMethod(f="filter",
           signature="DataSet",
-          definition=function(x,FUN,threshold,inverse){
+          definition=function(x,threshold,FUN,inverse){
             if(missing(inverse)){
               inverse=FALSE
             }
@@ -277,19 +313,25 @@ setMethod(f="filter",
                     }
                   }
                 }
-                print(elimino)
                 data<-x@data[-elimino]
               }
               else{
                 result<-sapply(x@data,FUN=FUN)
+                #print(result)
                 if(inverse==TRUE){
-                  filter<- result<threshold
-                }
-                else{
+                  result[is.na(result)] <- threshold+0.1
+
                   filter<- result>threshold
                 }
-                data<-x@data[filter]
+                else{
+                  result[is.na(result)] <- threshold-0.1
 
+                  filter<- result<threshold
+                  #print(filter)
+
+                }
+                data<-x@data[filter]
+                #print(data)
               }
 
 
@@ -317,16 +359,23 @@ setMethod(f="rocAuc",
             attr<-dat@data[[vIndex]]
             nValues<-length(attr@vector)
             class<-dat@data[[classIndex]]
+
+            orderedData <- data.frame(attr@vector,class@vector)
+            orderedData<-orderedData[order(orderedData$attr),]
+
+            attr<-orderedData$attr
+            class<-orderedData$class
+
             if(class(attr)!="factor"){
               TPR<-c()
               FPR<-c()
               for(i in 1:nValues){
                 predicciones<- rep(TRUE,nValues)
-                predicciones<-attr@vector>=attr@vector[i]
-                TP<-sum(class@vector&predicciones==TRUE)
-                TN<-sum(!(class@vector|predicciones))
-                FN<-sum((class@vector==1)&(predicciones==0))
-                FP<-sum((class@vector==0)&(predicciones==1))
+                predicciones<-attr>=attr[i]
+                TP<-sum(class&predicciones==1)
+                TN<-sum(!(class|predicciones))
+                FN<-sum((class==1)&(predicciones==0))
+                FP<-sum((class==0)&(predicciones==1))
                 TPR<-c(TPR,TP/(TP+FN))
                 FPR<-c(FPR,FP/(FP+TN))
 

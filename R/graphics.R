@@ -12,7 +12,9 @@ setMethod(f="entropyPlot",
           entropyPlot<- function(x){
             library(ggplot2)
             entropia<-entropy(x)
-            names<-getNames(x)
+            names(entropia)<-getNames(x)
+            entropia = entropia[!is.na(entropia)]
+            names<-names(entropia)
             datos<-data.frame(Variables=names,Entropy=entropia)
             p<-ggplot(data=datos, aes(x=Variables, y=Entropy)) +
               geom_bar(stat="identity", width=0.75,fill=rgb(0.1,0.4,0.5,0.7))
@@ -65,22 +67,32 @@ setMethod(f="rocPlot",
             attr<-dat@data[[vIndex]]
             nValues<-length(attr@vector)
             class<-dat@data[[classIndex]]
-            TPR<-c()
-            FPR<-c()
-            for(i in 1:nValues){
-              predicciones<- rep(TRUE,nValues)
-              predicciones<-attr@vector>=attr@vector[i]
-              TP<-sum(class@vector&predicciones==TRUE)
-              TN<-sum(!(class@vector|predicciones))
-              FN<-sum((class@vector==0)&(predicciones==1))
-              FP<-sum((class@vector==1)&(predicciones==0))
-              TPR<-c(TPR,TP/(TP+FN))
-              FPR<-c(FPR,FP/(FP+TN))
 
+            orderedData <- data.frame(attr@vector,class@vector)
+            orderedData<-orderedData[order(orderedData$attr),]
+
+            attr<-orderedData$attr
+            class<-orderedData$class
+
+            if(class(attr)!="factor"){
+              TPR<-c()
+              FPR<-c()
+              for(i in 1:nValues){
+                predicciones<- rep(TRUE,nValues)
+                predicciones<-attr>=attr[i]
+                TP<-sum(class&predicciones==1)
+                TN<-sum(!(class|predicciones))
+                FN<-sum((class==1)&(predicciones==0))
+                FP<-sum((class==0)&(predicciones==1))
+                TPR<-c(TPR,TP/(TP+FN))
+                FPR<-c(FPR,FP/(FP+TN))
+
+              }
+              TPR[is.na(TPR)] <- 0
+              FPR[is.na(FPR)] <- 0
+              plot(TPR,FPR,type="b")
             }
-            TPR[is.na(TPR)] <- 0
-            FPR[is.na(FPR)] <- 0
-            plot(TPR,FPR,type="b")
+
           })
 
 
