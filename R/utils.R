@@ -147,18 +147,17 @@ computEntropy <- function(x,normalize){
 }
 
 
-#' Function to compute the correlation between two vectors
+#' Function to compute the correlation between two objects of class \code{\linkS4class{Attribute}}
 #'
-#' @description This function computes the correlation between two vectors
-#' @param x an attribute
-#' @param y an attribute
+#' @description This function computes the correlation between two objects of class \code{\linkS4class{Attribute}}
+#' @param x an object of class \code{\linkS4class{Attribute}}
+#' @param y an object of class \code{\linkS4class{Attribute}}
 #' @param discretizationType if x and y are a mix of continuous and discrete variables a discretization is computed
-#' in the continuous one. This parameter indicates the discretization type to compute: equal width "EW"
-#' (default) or equal frequency "EF"
+#' in the continuous one. This parameter indicates the discretization type to compute: Equal Width "EW"
+#' (default) or Equal Frequency "EF"
 #' @param num.bins if x and y are a mix of continuous and discrete variables a discretization is computed
-#' in the continuous one. This parameter indicates the number of intervals to use in the discretization.
-#' It's 3 by default
-#' @return A real number with the correlation between both vectors
+#' in the continuous one. This parameter indicates the number of intervals to use in the discretization. The default value is 3.
+#' @return A real number with the correlation between both \code{\linkS4class{Attribute}}
 #' @example
 #' computeCorrelation(c(2.3,4.5,6.7,8.9),c(2,2,1,3))
 #' computeCorrelation(c(2.3,4.5,6.7,8.9),c(2,2,1,3),"EF")
@@ -201,10 +200,11 @@ computeCorrelation<-function(x,y,discretizationType,num.bins){
 
 #' Function to save a log text into a file
 #'
-#' @description This function saves the given text with the date in a file in the given path
+#' @description This function saves the given text with the actual time and date in a file in the given path
 #' @param text a character that contains the text to write
 #' @param file.path a character with the path where the text has to be saved
-#'
+#'@example
+#' writeFile("Error: callr subprocess failed: Vignette re-building failed.","path/to/save/file")
 
 writeFile <- function (text, file.path) {
   # Open connection
@@ -216,16 +216,25 @@ writeFile <- function (text, file.path) {
   close(con)
 }
 
-#' Function to read a CSV file and save it into a DataSet
+#' Function to read a CSV file and save it into a \code{\linkS4class{DataSet}}
 #'
-#' @description This function loads a CSV file into a DataSet object
-#' @param path path to the CSV file
-#' @param header logical indicating if the first row of data corresponds to the names
-#' @param sep the character separator of the data
+#' @description This function loads a CSV file into a \code{\linkS4class{DataSet}} object
+#' @param path a character that contains a path to the CSV file
+#' @param header logical indicating if the first row of data corresponds to the names of the \code{\linkS4class{Attribute}}. Default value is FALSE.
+#' @param sep the character separator of the data. Default value is ",".
 #' @return A DataSet containing the data of the CSV file.
-#'
+#' @example
+#' loadDataSet("path/to/csv",TRUE,",")
+#' loadDataSet("path/to/csv",sep=";")
+#' loadDataSet("path/to/csv",header=FALSE)
 #'
 loadDataSet <- function(path,header,sep){
+  if(missing(header)){
+    header="FALSE"
+  }
+  if(missing(sep)){
+    sep=","
+  }
   datos <- read.csv(path,header =header, sep=sep )
   cols<-colnames(datos)
   data<-dataset()
@@ -236,13 +245,14 @@ loadDataSet <- function(path,header,sep){
   return(data)
 }
 
-#' Function to write a CSV file with a DataSet information
+#' Function to write a CSV file with a \code{\linkS4class{DataSet}} information
 #'
-#' @description This function writes a CSV file with a DataSet information
-#' @param data the DataSet object to save
-#' @param file.path a character with the path where the DataSet has to be saved
-#' @return It creates a file in the given file.path containing the data of the DataSet object.
-#'
+#' @description This function writes a CSV file with a \code{\linkS4class{DataSet}} information
+#' @param data the \code{\linkS4class{DataSet}} object to save
+#' @param file.path a character with the path where the \code{\linkS4class{DataSet}} has to be saved
+#' @return It creates a file in the given file.path containing the data of the \code{\linkS4class{DataSet}} object.
+#' @example
+#' writeDataSet(dataset,"path/to/save/dataset")
 #'
 writeDataSet <- function(data,file.path){
   matriz<-asMatrix(data)

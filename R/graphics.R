@@ -4,7 +4,13 @@
 #' @param dataset object of class \code{\linkS4class{DataSet}}
 #' @return An object of class ggplot with the visualization
 #' @examples
-#'TODO
+#' attr1<-attribute(c(1,0,1,0),name="Class")
+#' attr2<-attribute(c(3.1,7.8,5.6,4.3),name="Class")
+#' attr3<-attribute(c(3,7,5,7),name="Class")
+#' ds<-dataset(attr1)
+#' ds<-addAttribute(ds,attr2)
+#' ds<-addAttribute(ds,attr3)
+#' entropyPlot(ds)
 #'
 setGeneric(name="entropyPlot",def=function(x) standardGeneric("entropyPlot"))
 setMethod(f="entropyPlot",
@@ -28,7 +34,13 @@ setMethod(f="entropyPlot",
 #' @param dataset object of class \code{\linkS4class{DataSet}}
 #' @return An object of class ggplot with the visualization
 #' @examples
-#'TODO
+#'attr1<-attribute(c(1,0,1,0),name="Class")
+#' attr2<-attribute(c(3.1,7.8,5.6,4.3),name="Class")
+#' attr3<-attribute(c(3,7,5,7),name="Class")
+#' ds<-dataset(attr1)
+#' ds<-addAttribute(ds,attr2)
+#' ds<-addAttribute(ds,attr3)
+#' correlationPlot(ds)
 #'
 setGeneric(name="correlationPlot",def=function(x) standardGeneric("correlationPlot"))
 setMethod(f="correlationPlot",
@@ -56,7 +68,13 @@ setMethod(f="correlationPlot",
 #' @param vIndex index of the continuous variable to compute the AUC
 #' @param classIndex index of the class
 #' @return A plot with the curve
-#'
+#' attr1<-attribute(c(1,0,1,0),name="Class")
+#' attr2<-attribute(c(3.1,7.8,5.6,4.3),name="Class")
+#' attr3<-attribute(c(3,7,5,7),name="Class")
+#' ds<-dataset(attr1)
+#' ds<-addAttribute(ds,attr2)
+#' ds<-addAttribute(ds,attr3)
+#' rocPlot(ds,2,1)
 #'
 
 setGeneric(name="rocPlot",def=function(dat,vIndex,classIndex) standardGeneric("rocPlot"))

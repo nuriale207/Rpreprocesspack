@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 ```
 This tutorial provides simple examples to learn how to use the functions provided by Preprocesspack package.
 
-First we are going to create an Attribute object. There are several ways of creating an object. In this example we have created three Attributes. In the last one, a discretization function has been applied.
+First we are going to create an Attribute object. There are several ways of creating an object. In this example we have created three Attributes.
 
 ```{r}
 attribute(c(0.3,0.23,0.4,0.74))
@@ -88,7 +88,6 @@ normalize(age)
 
 normalize(age_category)
 
-normalize(ds)
 ```
 
 To standardize the data or an attribute the function standardize can be used. When applied to a DataSet, columns parameter indicate to which columns the normalization have to be applied. In this case I will apply it to the following columns: 3,4,5,7,8,10,11,12,13. 
@@ -119,7 +118,7 @@ Entropy function computes the entropy of an Attribute or a complete DataSet. In 
   entropyPlot(wineData)
   
 ```
-The entropy of single attributes can also be computed. If the attribute is categorical the result will be Na.
+The entropy of single attributes can also be computed. If the attribute is not categorical the result will be Na.
 
 ```{r}
   entropy(age)

@@ -1,11 +1,9 @@
-#' An S4 class to represent Instances
+#' An S4 class to represent attributes
 #'
 #' @slot type Character value indicating the type of the vector: double, factor or numeric
 #' @slot size Numeric value indicating the size of the vector
-#' @slot vector Numeric vector containing the information of the attribute
-#' @slot discretize Logical optional value indicating if the attribute has to ve discretized
-#' @slot discretizationType Character optional value "EW" indicates to compute equal width discretization. "EF" indicates to compute equal frequency discretization
-#' @slot num.bins Numeric number of intervals for discretization
+#' @slot vector Numeric vector containing the information of the \code{\linkS4class{Attribute}}
+#' @slot name Character with the name of the \code{\linkS4class{Attribute}}
 
 setClass(Class="Attribute",
          slots=c("type"="character", "size"="numeric","vector"="numeric","name"="character"),
@@ -39,8 +37,13 @@ setValidity(Class="Attribute", method=checkValidityInstan)
 #' @slot name Character indicating the name given to the attribute
 #' @slot discretize Logical optional value indicating if the attribute has to be discretized
 #' @slot discretizationType Character optional value "EW" indicates to compute equal width discretization. "EF" indicates to compute equal frequency discretization
-#' @slot num.bins Numeric number of intervals for discretization#'
+#' @slot num.bins Numeric number of intervals for discretization
 #' @return An object of class \code{\linkS4class{Attribute}} that represents the attribute passed as an argument
+#' @example
+#' attribute(c(2,56,87,32,15), "Age",TRUE, "EF",4)
+#' attribute(c(2,56,87,32,15))
+#' attribute(c(2.3,5.8,4.3,3.2),discretize=TRUE,discretizationType="EF",num.bins=4)
+#' attribute(c(0,1,1,0,1,0))
 #'
 attribute <- function (vector,name,discretize, discretizationType,num.bins) {
 
@@ -88,6 +91,10 @@ attribute <- function (vector,name,discretize, discretizationType,num.bins) {
 #' @param num.bins Numeric value indicating the number of intervals. Default: half the length of the data
 #' @param type a Character indicating the type of discretization: Default "EW"(Equal Width) or "EF"(Equal Frequency)
 #' @return An Attribute with the factor containing the equal width discretization
+#' @example
+#' attr<- attribute(c(2.3,5.8,4.3,3.2),discretize=TRUE,discretizationType="EF",num.bins=4)
+#' discretize(attr,3)
+#' discretize(attr,4,"EF")
 #'
 setGeneric(name="discretize",def=function(x,num.bins,type,columns) standardGeneric("discretize"))
 
@@ -113,6 +120,9 @@ setMethod(f="discretize",
 #' @description This function computes the entropy of a given vector
 #' @param x a vector composed by discrete variables
 #' @return A real number
+#' @example
+#' attr<-attribute(c(0,1,2,0,1,2))
+#' entropy(attr)
 #'
 setGeneric(name="entropy", def=function(x) standardGeneric("entropy"))
 
@@ -135,6 +145,9 @@ setMethod(f="entropy",
 #' @description This function normalizes a given vector
 #' @param attribute an Attribute class vector
 #' @return A normalized attribute
+#' @example
+#' attr<- attribute(c(2.3,5.8,4.3,3.2))
+#' normalize(attr)
 #'
 setGeneric(name="normalize",def=function(x,columns) standardGeneric("normalize"))
 
@@ -159,6 +172,9 @@ setMethod(f="normalize",
 #' @description This function standardizes a given vector
 #' @param attribute an Attribute class vector
 #' @return A standardized attribute
+#' @example
+#' attr<- attribute(c(2.3,5.8,4.3,3.2))
+#' standardize(attr)
 #'
 setGeneric(name="standardize",def=function(x,columns) standardGeneric("standardize"))
 
@@ -183,6 +199,9 @@ setMethod(f="standardize",
 #' @description This function computes the variance of a given Attribute
 #' @param attribute an Attribute class vector
 #' @return A real number containing the variance of the attribute
+#' @example
+#' attr<- attribute(c(2.3,5.8,4.3,3.2))
+#' variance(attr)
 #'
 setGeneric(name="variance",def=function(x) standardGeneric("variance"))
 
@@ -204,6 +223,9 @@ setMethod(f="variance",
 #' @description This function returns the names of the columns of a given DataSet
 #' @param attribute an Attribute class vector
 #' @return A character containing the name of the attribute.
+#' @example
+#' attr<- attribute(c(2.3,5.8,4.3,3.2),name="Mark")
+#' getName(attr)
 #'
 
 setGeneric(name="getName",def=function(x) standardGeneric("getName"))
@@ -220,6 +242,9 @@ setMethod(f="getName",
 #' @description This function returns the vector of a given Attribute
 #' @param attribute an Attribute class vector
 #' @return A vector containing the information of the attribute.
+#' @example
+#' attr<- attribute(c(2.3,5.8,4.3,3.2),name="Mark")
+#' getVector(attr)
 #'
 
 setGeneric(name="getVector",def=function(attr) standardGeneric("getVector"))
@@ -235,7 +260,9 @@ setMethod(f="getVector",
 #' @description This function shows the Attribute
 #' @param attr Attribute class object
 #' @return A character object with the information of the Attribute
-#'
+#' @example
+#' attr<- attribute(c(2.3,5.8,4.3,3.2),name="Mark")
+#' attr
 
 setMethod(f="show",
           signature = "Attribute",
