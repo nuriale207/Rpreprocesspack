@@ -1,13 +1,14 @@
 #' Function to visualize the entropy of a given dataset
 #'
 #' @description This function estimates the entropy from a DataSet instances and visualizes them
-#' @param dataset object of class \code{\linkS4class{DataSet}}
+#' @param x object of class \code{\linkS4class{DataSet}}
 #' @return An object of class ggplot with the visualization
 #' @examples
-#' attr1<-attribute(c(1,0,1,0),name="Class")
-#' attr2<-attribute(c(3.1,7.8,5.6,4.3),name="Class")
-#' attr3<-attribute(c(3,7,5,7),name="Class")
-#' ds<-dataset(attr1)
+#' attr1<-attribute(as.factor(c(1,0,1,0)),name="Class")
+#' attr2<-attribute(c(3.1,7.8,5.6,4.3))
+#' attr3<-attribute(c(3,7,5,7))
+#' attr3<-discretize(attr3,3,"EF")
+#' ds<-dataset(list(attr1))
 #' ds<-addAttribute(ds,attr2)
 #' ds<-addAttribute(ds,attr3)
 #' entropyPlot(ds)
@@ -31,13 +32,13 @@ setMethod(f="entropyPlot",
 #' Function to visualize the correlation of a given dataset
 #'
 #' @description This function estimates the correlation from a DataSet instances and visualizes them
-#' @param dataset object of class \code{\linkS4class{DataSet}}
+#' @param x object of class \code{\linkS4class{DataSet}}
 #' @return An object of class ggplot with the visualization
 #' @examples
-#'attr1<-attribute(c(1,0,1,0),name="Class")
-#' attr2<-attribute(c(3.1,7.8,5.6,4.3),name="Class")
-#' attr3<-attribute(c(3,7,5,7),name="Class")
-#' ds<-dataset(attr1)
+#' attr1<-attribute(c(1,0,1,0),name="Class")
+#' attr2<-attribute(c(3.1,7.8,5.6,4.3))
+#' attr3<-attribute(c(3,7,5,7))
+#' ds<-dataset(list(attr1))
 #' ds<-addAttribute(ds,attr2)
 #' ds<-addAttribute(ds,attr3)
 #' correlationPlot(ds)
@@ -64,14 +65,15 @@ setMethod(f="correlationPlot",
 #' Function to visualize the ROC curve of a given DataSet
 #'
 #' @description This function visualizes the Curve ROC of the DataSet
-#' @param data DataSet class vector
+#' @param dat DataSet class vector
 #' @param vIndex index of the continuous variable to compute the AUC
 #' @param classIndex index of the class
 #' @return A plot with the curve
+#' @examples
 #' attr1<-attribute(c(1,0,1,0),name="Class")
-#' attr2<-attribute(c(3.1,7.8,5.6,4.3),name="Class")
-#' attr3<-attribute(c(3,7,5,7),name="Class")
-#' ds<-dataset(attr1)
+#' attr2<-attribute(c(3.1,7.8,5.6,4.3))
+#' attr3<-attribute(c(3,7,5,7))
+#' ds<-dataset(list(attr1))
 #' ds<-addAttribute(ds,attr2)
 #' ds<-addAttribute(ds,attr3)
 #' rocPlot(ds,2,1)
@@ -108,6 +110,7 @@ setMethod(f="rocPlot",
               }
               TPR[is.na(TPR)] <- 0
               FPR[is.na(FPR)] <- 0
+
               plot(TPR,FPR,type="b")
             }
 

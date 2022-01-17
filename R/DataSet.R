@@ -10,12 +10,18 @@ setClass(Class="DataSet",
 )
 
 checkValidityDataSet <- function (object) {
-  if(object@size!=length(object@data)){
+  if(length(object@data)==0 & object@size!=0){
     stop("The 'size' parameter is not equal to the length of the data")
   }
   else{
-    return(TRUE)
+    if(object@size!=length(object@data)){
+      stop("The 'size' parameter is not equal to the length of the data")
+    }
+    else{
+      return(TRUE)
+    }
   }
+
   return(TRUE)
 }
 setValidity(Class="DataSet", method=checkValidityDataSet)
@@ -24,14 +30,14 @@ setValidity(Class="DataSet", method=checkValidityDataSet)
 #' Basic constructor of the \code{\linkS4class{Dataset}} class
 #'
 #' @description This function creates an object of class \code{\linkS4class{DataSet}}
-#' @slot data List containing \code{\linkS4class{Attribute}} objects
-#' @slot name Character with the name of the \code{\linkS4class{DataSet}}
+#' @param data List containing \code{\linkS4class{Attribute}} objects
+#' @param name Character with the name of the \code{\linkS4class{DataSet}}
 #' @return An object of class \code{\linkS4class{Dataset}}
-#' @example
-#' dataset(list(c(2,3,6,4),c(1.2,2.3,4.5,7.8)),"Data")
-#' dataset()
-#' dataset(name="Population")
-#' dataset(list(c(0,1,1,0),c(9,6,4,3)))
+#' @examples
+#' attr1<-attribute(c(2,3,6,4))
+#' attr2<-attribute(c(1.2,2.3,4.5,7.8))
+#' dataset(c(attr1,attr2),"Data")
+#' dataset(c(attr1,attr2))
 dataset<- function(data,name){
   if(missing(data)){
     if(missing(name)){
@@ -57,24 +63,25 @@ dataset<- function(data,name){
 #' Function to add an attribute class object to a \code{\linkS4class{Dataset}}
 #'
 #' @description This adds an attribute to a \code{\linkS4class{Dataset}}
-#' @param dataset Object of class \code{\linkS4class{Dataset}}
-#' @param attribute Object of class \code{\linkS4class{Attribute}} or vector to add to the dataset
+#' @param data Object of class \code{\linkS4class{Dataset}}
+#' @param attr Object of class \code{\linkS4class{Attribute}} or vector to add to the dataset
 #' @return The object of class \code{\linkS4class{Dataset}} with a new object of class \code{\linkS4class{Attribute}} on its' list
-#' @example
-#' addAttribute(dataset,c(3.2,4.6,9.7,3.2))
-#' attr<-Attribute(c(3,73,25,17),name="age")
-#' addAttribute(dataset,attr)
+#' @examples
+#' data<-dataset(c(attribute(c(2,3,6,4)),attribute(c(2,7,8,9))))
+#' addAttribute(data,c(3.2,4.6,9.7,3.2))
+#' attr<-attribute(c(3,73,25,17),name="age")
+#' addAttribute(data,attr)
 
-setGeneric(name="addAttribute", def=function(dataset, attribute) standardGeneric("addAttribute"))
+setGeneric(name="addAttribute", def=function(data, attr) standardGeneric("addAttribute"))
 
 setMethod(f="addAttribute",
           signature="DataSet",
-          definition=function (dataset, attribute) {
-            if(class(attribute)!="Attribute"){
-              attribute<-attribute(attribute)
+          definition=function (data, attr) {
+            if(class(attr)!="Attribute"){
+              attr<-attribute(attr)
             }
-            dataset@data<-append(dataset@data,attribute)
-            return(dataset(dataset@data,dataset@name))
+            data@data<-append(data@data,attr)
+            return(dataset(data@data,data@name))
           })
 
 
@@ -84,9 +91,10 @@ setMethod(f="addAttribute",
 #' @param x a \code{\linkS4class{DataSet}} class vector
 #' @param columns a vector indicating the columns to which the normalization has to be applied. By default it will be applied to every columns
 #' @return A normalized \code{\linkS4class{DataSet}}
-#' @example
-#' normalizedData<- normalize(dataset)
-#' normalize(dataset,c(2,3))
+#' @examples
+#' data<-dataset(c(attribute(c(2,3,6,4)),attribute(c(2,7,8,9))))
+#' normalizedData<- normalize(data)
+#' normalize(data,c(1))
 
 setMethod(f="normalize",
           signature = "DataSet",
@@ -104,12 +112,13 @@ setMethod(f="normalize",
 #' Function to standardize a given \code{\linkS4class{DataSet}}
 #'
 #' @description This function standardizes a given \code{\linkS4class{DataSet}}
-#' @param data a \code{\linkS4class{DataSet}} class vector
+#' @param x a \code{\linkS4class{DataSet}} class vector
 #' @param columns a vector indicating the columns to which the normalization has to be applied. By default it will be applied to every columns
 #' @return A standardized \code{\linkS4class{DataSet}}
-#' @example
-#'stData<- standardize(dataset)
-#'standardize(dataset,c(2,3))
+#' @examples
+#' data<-dataset(c(attribute(c(2,3,6,4)),attribute(c(2,7,8,9))))
+#' stData<- standardize(data)
+#' standardize(data,c(1))
 
 setMethod(f="standardize",
           signature = "DataSet",
@@ -129,8 +138,8 @@ setMethod(f="standardize",
 #' @description This function computes the variance of a given \code{\linkS4class{DataSet}}
 #' @param x a \code{\linkS4class{DataSet}} Object
 #' @return A vector containing the variance of each column data. If an \code{\linkS4class{Attribute}} is categorical it will return NA
-#' @example
-#' ds<-dataset(list(c(2,3,6,4),c(1.2,2.3,4.5,7.8)),"Data")
+#' @examples
+#' ds<-dataset(list(attribute(c(2,3,6,4)),attribute(c(1.2,2.3,4.5,7.8))),"Data")
 #' variance(ds)
 #'
 
@@ -145,11 +154,14 @@ setMethod(f="variance",
 #' Function to compute the entropy of a given \code{\linkS4class{DataSet}}
 #'
 #' @description This function computes the entropy of a given \code{\linkS4class{DataSet}}
-#' @param data a \code{\linkS4class{DataSet}} class vector
+#' @param x a \code{\linkS4class{DataSet}} class vector
 #' @return A vector containing the entropy of each column data if the data is discrete. NA otherwise
-#' @example
-#' ds<-dataset(list(c(2,3,6,4),c(1.2,2.3,4.5,7.8)),"Data")
+#' @examples
+#' attr<-attribute(c(0,1,2,0,1,2))
+#' attr<-discretize(attr,3,"EF")
+#' ds<-dataset(c(attr,attribute(c(1.2,2.3,4.5,7.8))),"Data")
 #' entropy(ds)
+#' entropy(attr)
 
 setMethod(f="entropy",
           signature = 'DataSet',
@@ -163,16 +175,15 @@ setMethod(f="entropy",
 #' Function to discretize a given \code{\linkS4class{DataSet}}
 #'
 #' @description This function computes the dicretization of a given \code{\linkS4class{DataSet}}
-#' @param data \code{\linkS4class{DataSet}} class vector
+#' @param x \code{\linkS4class{DataSet}} class vector
 #' @param num.bins Numeric value indicating the number of intervals. Default: half the length of the data
 #' @param type a Character indicating the type of discretization: Default "EW"(Equal Width) or "EF"(Equal Frequency)
 #' @param columns Numeric vector indicating the columns in which the discretization must be applied. By default the discretization of every column will be computed
 #' @return A vector containing the entropy of each column data if the data is discrete. NA otherwise
-#' @example
-#' ds<-dataset(list(c(2,3,6,4),c(1.2,2.3,4.5,7.8)),"Data")
-#' dsDisc<-discretize(ds)
+#' @examples
+#' ds<-dataset(list(attribute(c(2,3,6,4)),attribute(c(1.2,2.3,4.5,7.8))),"Data")
 #' dsDisc<-discretize(ds,5,"EW")
-#' dsDisc<-discretize(ds,5,columns=c(2,3,4,5))
+#' dsDisc<-discretize(ds,5,"EW",columns=c(1))
 #' dsDisc<-discretize(ds,type="EF")
 
 setMethod(f="discretize",
@@ -196,14 +207,14 @@ setMethod(f="discretize",
           })
 
 #' @description This function returns the names of the columns of a given \code{\linkS4class{DataSet}}
-#' @param data \code{\linkS4class{DataSet}} class vector
+#' @param x \code{\linkS4class{DataSet}} class vector
 #' @return A vector containing the name of each column data.
-#' @example
-#' ds<-dataset(list(c(2,3,6,4),c(1.2,2.3,4.5,7.8)),"Data")
+#' @examples
+#' ds<-dataset(list(attribute(c(2,3,6,4)),attribute(c(1.2,2.3,4.5,7.8))),"Data")
 #' getNames(ds)
 #' attr1<-attribute(c(1,0,1,0),name="Class")
 #' attr2<-attribute(c(3.1,7.8,5.6,4.3),name="Class")
-#' ds<-dataset(attr1)
+#' ds<-dataset(list(attr1))
 #' ds<-addAttribute(ds,attr2)
 #' getNames(ds)
 
@@ -218,11 +229,11 @@ setMethod(f="getNames",
 #' Function to convert the \code{\linkS4class{DataSet}} into a Matrix
 #'
 #' @description This function returns a Matrix with the data of a given \code{\linkS4class{DataSet}}
-#' @param data \code{\linkS4class{DataSet}} class vector
+#' @param x \code{\linkS4class{DataSet}} class vector
 #' @return A matrix with the data of the \code{\linkS4class{DataSet}}.
-#' @example
-#' ds<-dataset(list(c(2,3,6,4),c(1.2,2.3,4.5,7.8)),"Data")
-#' asMatrix(ds)
+#' @examples
+# ds<-dataset(list(attribute(c(2,3,6,4)),attribute(c(1.2,2.3,4.5,7.8))),"Data")
+# asMatrix(ds)
 #'
 setGeneric(name="asMatrix",def=function(x) standardGeneric("asMatrix"))
 
@@ -237,10 +248,10 @@ setMethod(f="asMatrix",
 #' Function to print the \code{\linkS4class{DataSet}}
 #'
 #' @description This function prints the \code{\linkS4class{DataSet}}
-#' @param data \code{\linkS4class{DataSet}} class vector
+#' @param object \code{\linkS4class{DataSet}} class vector
 #' @return Shows the information of the \code{\linkS4class{DataSet}}.
-#' @example
-#' ds<-dataset(list(c(2,3,6,4),c(1.2,2.3,4.5,7.8)),"Data")
+#' @examples
+#' ds<-dataset(list(attribute(c(2,3,6,4)),attribute(c(1.2,2.3,4.5,7.8))),"Data")
 #' ds
 #'
 setMethod(f="show",
@@ -288,15 +299,15 @@ setMethod(f="show",
 #' Function to compute the correlation matrix between the \code{\linkS4class{Attribute}} pairs of the \code{\linkS4class{DataSet}}
 #'
 #' @description This function returns the correlation matrix between the \code{\linkS4class{Attribute}} pairs of the \code{\linkS4class{DataSet}}
-#' @param data \code{\linkS4class{DataSet}} class vector
+#' @param x \code{\linkS4class{DataSet}} class vector
 #' @param discretizationType if x and y are a mix of continuous and discrete variables a discretization is computed
 #' in the continuous one. This parameter indicates the discretization type to compute: Equal Width "EW"
 #' (default) or Equal Frequency "EF"
 #' @param num.bins if x and y are a mix of continuous and discrete variables a discretization is computed
 #' in the continuous one. This parameter indicates the number of intervals to use in the discretization. The default value is 3.
 #' @return A matrix containing the correlation between attribute pairs.
-#' @example
-#' ds<-dataset(list(c(2,3,6,4),c(1.2,2.3,4.5,7.8)),"Data")
+#' @examples
+#'  ds<-dataset(list(attribute(c(2,3,6,4)),attribute(c(1.2,2.3,4.5,7.8))),"Data")
 #' corr<-correlation(ds)
 #' correlation(ds,"EF",4)
 #' correlation(ds,num.bins=4)
@@ -334,30 +345,37 @@ setMethod(f="correlation",
 #' @param x \code{\linkS4class{DataSet}} class vector
 #' @param FUN function by which filter the data, it has to return a value per attribute. FUN=correlation by default
 #' @param threshold numeric value that indicates the limit from which to remove the attribute
-#' @param inverse If TRUE the attribute has to be below the threshold to remove ir.By default FALSE
+#' @param inverse If TRUE the attribute has to be below the threshold to remove it.By default FALSE
+#' @param columns columns to apply the function to
 #' @return A \code{\linkS4class{DataSet}} without the filtered attributes
-#' @example
-#' ds<-dataset(list(c(2,3,6,4),c(1.2,2.3,4.5,7.8)),"Data")
-#' filter(ds,0.6)
-#' filter(wineData,2.5,variance)
+#' @examples
+#' ds<-dataset(list(attribute(c(2,3,6,4)),attribute(c(1.2,2.3,4.5,7.8))),"Data")
+#' filter(ds,0.4)
 
-setGeneric(name="filter",def=function(x,threshold,FUN,inverse) standardGeneric("filter"))
+setGeneric(name="filter",def=function(x,threshold,FUN,inverse,columns) standardGeneric("filter"))
 setMethod(f="filter",
           signature="DataSet",
-          definition=function(x,threshold,FUN,inverse){
+          definition=function(x,threshold,FUN,inverse,columns){
             if(missing(inverse)){
               inverse=FALSE
+            }
+            if(missing(columns)){
+              columns=seq(1,length(x@data))
             }
               if(missing(FUN)){
                 cor<-correlation(x)
                 elimino<-c()
-                for(i in seq(1,length(x@data))){
-                  for(j in seq(i,length(x@data))){
+                for(i in columns){
+                  for(j in columns){
                     if(i!=j && cor[i,j]>=threshold && inverse==FALSE){
-                       elimino<-c(elimino,i)
+                      if(j %in% elimino==FALSE){
+                        elimino<-c(elimino,i)
+                      }
                     }
                     else if(i!=j && cor[i,j]<threshold && inverse==TRUE){
-                       elimino<-c(elimino,i)
+                      if(j %in% elimino==FALSE){
+                        elimino<-c(elimino,i)
+                      }
                     }
                   }
                 }
@@ -365,7 +383,6 @@ setMethod(f="filter",
               }
               else{
                 result<-sapply(x@data,FUN=FUN)
-                #print(result)
                 if(inverse==TRUE){
                   result[is.na(result)] <- threshold+0.1
 
@@ -375,13 +392,16 @@ setMethod(f="filter",
                   result[is.na(result)] <- threshold-0.1
 
                   filter<- result<threshold
-                  #print(filter)
 
                 }
-                data<-x@data[filter]
-                #print(data)
-              }
+                for (i in columns){
+                  if(filter[i]==FALSE){
 
+                    data<-x@data[-i]
+                  }
+                }
+
+              }
 
              return(dataset(data,x@name))
 
@@ -392,14 +412,14 @@ setMethod(f="filter",
 #' Function to compute the AUC-ROC of the DataSet
 #'
 #' @description This function computes the Area Under the Curve ROC of the DataSet
-#' @param data DataSet class vector
+#' @param dat DataSet class vector
 #' @param vIndex index of the continuous variable to compute the AUC
 #' @param classIndex index of the class
 #' @return The value of the AUC-ROC
-#' @example
+#' @examples
 #' attr1<-attribute(c(1,0,1,0),name="Class")
 #' attr2<-attribute(c(3.1,7.8,5.6,4.3),name="Class")
-#' ds<-dataset(attr1)
+#' ds<-dataset(list(attr1))
 #' ds<-addAttribute(ds,attr2)
 #' rocAuc(ds,1,2)
 
@@ -437,7 +457,8 @@ setMethod(f="rocAuc",
               dFPR <- c(diff(FPR), 0)
               dTPR <- c(diff(TPR), 0)
               AUC<-sum(TPR * dFPR) + sum(dTPR * dFPR)/2
-              return(AUC)
+              AUC2<-sum(TPR+FPR)/2
+              return(AUC2)
             }
 
                      })

@@ -15,14 +15,16 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
+
 This tutorial provides simple examples to learn how to use the functions provided by Preprocesspack package.
 
 First we are going to create an Attribute object. There are several ways of creating an object. In this example we have created three Attributes.
 
 ```{r}
+library(preprocesspack)
 attribute(c(0.3,0.23,0.4,0.74))
 
-age<-attribute(c(13,26,84,55,30),name="age")
+age<-attribute(c(34,16,78,90,12),name="age")
 age
 
 
@@ -34,7 +36,6 @@ To create a DataSet we can add a previously defined attribute or pass a vector. 
 ds<-dataset(name="My data set")
 
 ds<-addAttribute(ds,age)
-ds<-addAttribute(ds,age_category)
 ds<-addAttribute(ds,c(2,3,4,5))
 
 
@@ -43,15 +44,19 @@ ds
 From now on the tutorial will focus in how to use the preprocesspack in an external DataSet. We will use a DataSet called wine data that includes the information (alcohol quantity, color intensity, magnesium...) of two wine types. In this step we have loaded the data from a csv file using loadDataSet function. This function loads the csv file content into a DataSet. In this example the loaded file is separated by , and the first row works as the column name for the file.
 
 ```{r}
-wineData<-loadDataSet("wine.data.csv",header=TRUE,sep=",")
+wineData<-loadDataSet("wine_data_reduced.csv",header=TRUE,sep=",")
 wineData
 
 ```
  The first step with this DataSet will be to discretize the Alcohol and Magnesium columns of the data, as it can be easily noticed that both can be divided into three intervals. DataSet and Attribute objects can be discretized using the function discretize. This function computes two types of discretization: on the one hand, by assigning the "EW" value to the type parameter equal width discretization is computed. On the other hand, assigning "EF" value to the parameter computes equal width discretization. Num.bins parameter indicates how many intervals are going to be made. In the following example we will compute an equal width discretization of the both columns (2 and 6). Moreover, we will compute an Equal Frecuency discretization in the last attribute, using num.bins=5
 
 ```{r}
+
 wineData<-discretize(wineData,3,"EW",c(2,6))
-wineData<-discretize(wineData,5,"EF",14)
+
+wineData<-discretize(wineData,5,"EW",c(7))
+
+
 
 wineData
 
@@ -64,18 +69,20 @@ class(wineData@data[[6]]@vector)
 ```
 Single attributes can also be discretized:
 ```{r}
-age_category<-attribute(c(12,60,65,14,40),name="age category")
+age_category<-attribute(c(34,16,78,90,12),name="age category")
 age_category<-discretize(age_category,type = "EW",num.bins = 2)
 age_category
 ```
 
-The function normalize is used to normalize the data or an attribute. When applied to a DataSet, columns parameter indicate to which columns the normalization have to be applied. In this case I will apply it to the following columns: 3,4,5,7,8,10,11,12,13. 
+The function normalize is used to normalize the data or an attribute. When applied to a DataSet, columns parameter indicate to which columns the normalization have to be applied. In this case I will apply it to the following columns: 3,4,5,7. 
 
 
 ```{r, fig.width=10, fig.height=6, out.width="100%"}
 
-wineDataNormalized<-normalize(wineData,c(3,4,5,7,8,10,11,12,13))
+wineDataNormalized<-normalize(wineData,c( 3,4,5,7))
+wineDataNormalized@data[3]
 wineDataNormalized
+
 ```
 If the columns parameter is empty and the normalize function is applied to the hole DataSet it will return the original attribute if applied to categorical attributes and will normalize the rest.
 ```{r}
@@ -90,12 +97,12 @@ normalize(age_category)
 
 ```
 
-To standardize the data or an attribute the function standardize can be used. When applied to a DataSet, columns parameter indicate to which columns the normalization have to be applied. In this case I will apply it to the following columns: 3,4,5,7,8,10,11,12,13. 
+To standardize the data or an attribute the function standardize can be used. When applied to a DataSet, columns parameter indicate to which columns the normalization have to be applied. In this case I will apply it to the following columns: 3,4,5,7. 
 
 
 ```{r, fig.width=10, fig.height=6, out.width="100%"}
 
-wineDataStandardized<-standardize(wineData,c(3,4,5,7,8,10,11,12,13))
+wineDataStandardized<-standardize(wineData,c(3,4,5,7))
 wineDataStandardized
 ```
 If the columns parameter is empty and the standardize function is applied to the hole DataSet it will return the original attribute if applied to categorical attributes and will standardize the rest.
@@ -161,25 +168,29 @@ With the correlationPlot function the correlation can be displayed graphically. 
 
 correlationPlot(wineDataStandardized)
 ```
-Another useful function of this package is the filter function. This function removes from the data the attributes with a correlation above the given threshold. If a function is passed through FUN parameter is given the filter function will apply the function to the data and remove the attributes that have a higher score than the threshold for the given function. Inverse parameter indicates whether the attributes have to be behind the thresshold in order to be removed, its default value is False. In the following example, first the attributes with a correlation higher than 0.6 are removed: Flavanoids and Total phenols.
+Another useful function of this package is the filter function. This function removes from the data the attributes with a correlation above the given threshold. If a function is passed through FUN parameter the filter function will apply the function to the data and remove the attributes that have a higher score than the given threshold. Inverse parameter indicates whether the attributes have to be behind the thresshold in order to be removed, its default value is False. In the following example, the attributes with a correlation higher than 0.4 are removed. As the Class attribute shouldn't be removes I will apply the function only to the rest of the columns. As we see in the result Malid acid attribute have been removed.
+
 ```{r}
-filteredWineData<-filter(wineDataStandardized,0.6)
-filteredWineData
+filteredWineData<-filter(wineDataStandardized,0.4,columns=c(2,3,4,5,6,7))
+getNames(wineDataStandardized)
+getNames(filteredWineData)
 
 ```
-In the following example the attributes with a variance higher than 2 will be removed. If we compute the variance we see that the attributes that have to be removed are the fifth (Alcalinity of ash) and the 11th one (Color intensity).
+In the following example the attributes with a variance higher than 2 will be removed. If we compute the variance we see that the attribute that have to be remove is the fifth (Alcalinity of ash).
 ```{r}
-
-filteredWineData<-filter(wineData,1,variance)
-filteredWineData
+variance(wineData)
+filteredWineData<-filter(wineData,1,variance,columns = c(2,3,4,5,6,7))
+getNames(wineData)
+getNames(filteredWineData)
 
 ```
 
-Using the RocAuc function the area behind the ROC curve can be calculated. The RocAuc function takes as parameters: a DataSet, a variable and a class index and returns the area behind the ROC curve. In order to visualize the curve, the function RocPlot plots the Roc curve of the given variable index. We will compute the RocPlot between the class and the hue attribute as well as visualize the plot-
+Using the RocAuc function the area behind the ROC curve can be calculated. The RocAuc function takes as parameters: a DataSet, a variable and a class index and returns the area behind the ROC curve. In order to visualize the curve, the function RocPlot plots the Roc curve of the given variable index. We will compute the RocPlot between the class and the Alcalinity attribute as well as visualize the plot-
 ```{r}
 
-rocAuc(wineData,12,1)
-rocPlot(wineData,12,1)
+rocAuc(wineData,3,1)
+rocPlot(wineData,3,1)
 
 
 ```
+
